@@ -2,24 +2,38 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
-const path = require("path"); // Import path module
+const path = require("path");
 
 const app = express();
 const PORT = 3000;
 
-app.use(express.json());
-app.use(cors()); // Allows frontend to communicate with backend
+// ✅ Enable CORS for your frontend domain
+app.use(cors()); // Allow all domains temporarily for debugging
 
-// Serve static files (including chinookwords.json)
+// OR (if you want to restrict to only your frontend domain)
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "http://olympusmultimedia.com");
+    res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    next();
+});
+
+
+// ✅ Serve the chinookwords.json file correctly
 app.use(express.static(path.join(__dirname)));
 
-// Ensure API Key is Available
+// ✅ Ensure API Key is Available
 if (!process.env.OPENAI_API_KEY) {
     console.error("❌ ERROR: Missing OpenAI API Key in .env file!");
     process.exit(1);
 }
 
-// Route to Handle AI Translations
+// ✅ Route to Serve Dictionary File Explicitly
+app.get("/chinookwords.json", (req, res) => {
+    res.sendFile(path.join(__dirname, "chinookwords.json"));
+});
+
+// ✅ Route to Handle AI Translations
 app.post("/translate", async (req, res) => {
     const { inputWord } = req.body;
 
@@ -50,7 +64,7 @@ app.post("/translate", async (req, res) => {
     }
 });
 
-// Start Server
+// ✅ Start Server
 app.listen(PORT, () => {
     console.log(`✅ Server running at http://localhost:${PORT}`);
     console.log(`📂 Serving static files from ${__dirname}`);
