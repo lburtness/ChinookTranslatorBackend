@@ -9,8 +9,8 @@ const PORT = 3000;
 
 // ✅ Allow HTTPS and HTTP Origins (Fix for Secure Site)
 const allowedOrigins = [
-    "https://olympusmultimedia.com",  // Secure version
-    "http://olympusmultimedia.com"   // Keep for local/dev testing
+    "https://olympusmultimedia.com",
+    "http://olympusmultimedia.com"
 ];
 
 app.use((req, res, next) => {
@@ -23,7 +23,10 @@ app.use((req, res, next) => {
     next();
 });
 
-// ✅ Serve Static Files (like chinookwords.json)
+// ✅ Enable JSON Parsing for API Requests
+app.use(express.json());
+
+// ✅ Serve Static Files
 app.use(express.static(path.join(__dirname)));
 
 // ✅ Ensure API Key is Available
@@ -32,7 +35,7 @@ if (!process.env.OPENAI_API_KEY) {
     process.exit(1);
 }
 
-// ✅ Route to Serve Dictionary File Explicitly
+// ✅ Route to Serve Dictionary File
 app.get("/chinookwords.json", (req, res) => {
     res.sendFile(path.join(__dirname, "chinookwords.json"));
 });
