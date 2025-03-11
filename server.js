@@ -7,26 +7,23 @@ const path = require("path");
 const app = express();
 const PORT = 3000;
 
-// ✅ Enable CORS for frontend requests
-app.use(cors()); // Allows all origins temporarily for debugging
+// ✅ Allow HTTPS and HTTP Origins (Fix for Secure Site)
+const allowedOrigins = [
+    "https://olympusmultimedia.com",  // Secure version
+    "http://olympusmultimedia.com"   // Keep for local/dev testing
+];
 
-// ✅ OR restrict CORS to only your frontend domain
 app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "http://olympusmultimedia.com"); // ✅ Allow frontend domain
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+        res.header("Access-Control-Allow-Origin", origin);
+    }
     res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    
-    // ✅ Handle CORS Preflight Requests (OPTIONS)
-    if (req.method === "OPTIONS") {
-        return res.sendStatus(204);
-    }
-
     next();
 });
 
-app.use(express.json());
-
-// ✅ Serve static files (including `chinookwords.json`)
+// ✅ Serve Static Files (like chinookwords.json)
 app.use(express.static(path.join(__dirname)));
 
 // ✅ Ensure API Key is Available
@@ -35,16 +32,13 @@ if (!process.env.OPENAI_API_KEY) {
     process.exit(1);
 }
 
-// ✅ Route to Serve Dictionary File (`chinookwords.json`)
+// ✅ Route to Serve Dictionary File Explicitly
 app.get("/chinookwords.json", (req, res) => {
-    res.setHeader("Access-Control-Allow-Origin", "http://olympusmultimedia.com"); // ✅ Allows CORS for this request
     res.sendFile(path.join(__dirname, "chinookwords.json"));
 });
 
 // ✅ Route to Handle AI Translations
 app.post("/translate", async (req, res) => {
-    res.setHeader("Access-Control-Allow-Origin", "http://olympusmultimedia.com"); // ✅ Allows CORS for AI requests
-
     const { inputWord } = req.body;
 
     if (!inputWord) {
